@@ -1,0 +1,290 @@
+---
+interface Props {
+  name: string;
+  tagline: string;
+}
+
+const { name, tagline } = Astro.props;
+---
+
+<section class="hero">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="panel">
+    <h1>{name}</h1>
+    <p>{tagline}</p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    width: 100%;
+    height: clamp(28rem, 74vh, 46rem);
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .panel {
+    position: absolute;
+    left: clamp(1rem, 5vw, 4.5rem);
+    bottom: clamp(2rem, 8vh, 5rem);
+    max-width: min(90vw, 34rem);
+    padding: 2rem 2.5rem 2.25rem;
+    border-radius: 14px;
+    background: rgba(8, 16, 26, 0.55);
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
+
+  .panel h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 6.5vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .panel p {
+    margin: 0.9rem 0 0;
+    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('field') as HTMLCanvasElement | null;
+  if (canvas) {
+    const ctx = canvas.getContext('2d', { alpha: false })!;
+
+    // --- Perlin noise (2D) -------------------------------------------------
+    const perm = new Uint8Array(512);
+    {
+      const p = Uint8Array.from({ length: 256 }, (_, i) => i);
+      for (let i = 255; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        [p[i], p[j]] = [p[j], p[i]];
+      }
+      for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+    }
+    const fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+    const mix = (a, b, t) => a + t * (b - a);
+    function grad(hh, x, y) {
+      const g = hh & 7;
+      const u = g < 4 ? x : y;
+      const v = g < 4 ? y : x;
+      return ((g & 1) ? -u : u) + ((g & 2) ? -2 * v : 2 * v);
+    }
+    function noise2(x, y) {
+      const X = Math.floor(x) & 255;
+      const Y = Math.floor(y) & 255;
+      x -= Math.floor(x);
+      y -= Math.floor(y);
+      const u = fade(x);
+      const v = fade(y);
+      const A = perm[X] + Y;
+      const B = perm[X + 1] + Y;
+      return mix(
+        mix(grad(perm[A], x, y), grad(perm[B], x - 1, y), u),
+        mix(grad(perm[A + 1], x, y - 1), grad(perm[B + 1], x - 1, y - 1), u),
+        v
+      );
+    }
+
+    // --- Tunables ----------------------------------------------------------
+    const COLS = 88;          // grid resolution across
+    const ROWS = 54;          // grid resolution into the distance
+    const Z_NEAR = 1.0;
+    const Z_FAR = 30;
+    const X_HALF = 46;        // world half-width of the grid
+    const CAM_Y = 2.8;        // camera height above the water plane
+    const FOCAL = 1.15;
+    const HORIZON = 0.46;     // horizon as a fraction of canvas height
+    const AMP = 1.4;          // overall vertical scale
+    const NOISE_S = 0.075;    // lower = longer, lazier swells
+    const SPEED = 0.0008;      // how fast the waves roll toward you
+    const CALM_UNTIL = 5;     // world depth where the water starts rising
+    const PEAK_BY = 17;       // world depth where peaks reach full height
+    const CURSOR_LIFT = 1.5;  // height of the swell under the pointer
+    const CURSOR_R = 3.4;     // its radius, in world units
+    const PEAKS = 1.7;        // how mountainous the far field gets
+
+    const LINE = [90, 220, 185];   // grid color, rgb
+    const SKY_TOP = '#060d15';
+    const SKY_GLOW = '#0d2a33';
+    const SKY_LOW = '#0a1420';
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let S = 0;
+    let cx = 0;
+    let hy = 0;
+    let t = 0;
+
+    const zs = new Float64Array(ROWS);
+    for (let i = 0; i < ROWS; i++) {
+      zs[i] = Z_NEAR * Math.pow(Z_FAR / Z_NEAR, i / (ROWS - 1));
+    }
+    const xs = new Float64Array(COLS);
+    for (let j = 0; j < COLS; j++) {
+      xs[j] = -X_HALF + (2 * X_HALF * j) / (COLS - 1);
+    }
+
+    const px = new Float64Array(ROWS * COLS);
+    const py = new Float64Array(ROWS * COLS);
+
+    const cursor = { on: false, x: 0, z: 0 };
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+    function height(x, z) {
+      const n1 = noise2(x * NOISE_S, (z + t * SPEED * 60) * NOISE_S);
+      const n2 = noise2(x * NOISE_S * 2.4 + 31.7, (z + t * SPEED * 60) * NOISE_S * 2.4 + 11.3);
+      const swell = n1 * 0.6 + n2 * 0.3;
+      const peak = Math.max(0, n1) * Math.max(0, n1) * PEAKS;
+      const env = clamp01((z - CALM_UNTIL) / (PEAK_BY - CALM_UNTIL));
+      let y = AMP * (swell * 0.32 + peak * env);
+
+      if (cursor.on) {
+        const dx = x - cursor.x;
+        const dz = z - cursor.z;
+        y += CURSOR_LIFT * Math.exp(-(dx * dx + dz * dz) / (2 * CURSOR_R * CURSOR_R));
+      }
+      return y;
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = canvas!.getBoundingClientRect();
+      w = r.width;
+      h = r.height;
+      canvas!.width = w * dpr;
+      canvas!.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx = w / 2;
+      hy = h * HORIZON;
+      S = h * 0.9;
+    }
+
+    function frame() {
+      // sky
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, SKY_TOP);
+      sky.addColorStop(Math.max(0, HORIZON - 0.03), SKY_GLOW);
+      sky.addColorStop(Math.min(1, HORIZON + 0.05), SKY_LOW);
+      sky.addColorStop(1, SKY_LOW);
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+
+      // project every vertex once
+      for (let i = 0; i < ROWS; i++) {
+        const z = zs[i];
+        const k = (FOCAL * S) / z;
+        for (let j = 0; j < COLS; j++) {
+          const y = height(xs[j], z);
+          const n = i * COLS + j;
+          px[n] = cx + xs[j] * k;
+          py[n] = hy + (CAM_Y - y) * k;
+        }
+      }
+
+      // one gradient for the whole mesh: faint at the horizon, bright up close
+      const g = ctx.createLinearGradient(0, hy, 0, h);
+      g.addColorStop(0, `rgba(${LINE[0]},${LINE[1]},${LINE[2]},0.05)`);
+      g.addColorStop(0.35, `rgba(${LINE[0]},${LINE[1]},${LINE[2]},0.30)`);
+      g.addColorStop(1, `rgba(${LINE[0]},${LINE[1]},${LINE[2]},0.72)`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1;
+
+      // lines running across
+      ctx.beginPath();
+      for (let i = 0; i < ROWS; i++) {
+        const base = i * COLS;
+        ctx.moveTo(px[base], py[base]);
+        for (let j = 1; j < COLS; j++) ctx.lineTo(px[base + j], py[base + j]);
+      }
+      ctx.stroke();
+
+      // lines running into the distance
+      ctx.beginPath();
+      for (let j = 0; j < COLS; j++) {
+        ctx.moveTo(px[j], py[j]);
+        for (let i = 1; i < ROWS; i++) ctx.lineTo(px[i * COLS + j], py[i * COLS + j]);
+      }
+      ctx.stroke();
+    }
+
+    let running = false;
+    let raf = 0;
+    function loop() {
+      t++;
+      frame();
+      raf = requestAnimationFrame(loop);
+    }
+    function start() {
+      if (running || reduced) return;
+      running = true;
+      loop();
+    }
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    resize();
+    frame();
+    if (!reduced) start();
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        frame();
+      }, 180);
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      const r = canvas.getBoundingClientRect();
+      const sx = e.clientX - r.left;
+      const sy = e.clientY - r.top;
+      if (sy <= hy + 4) {
+        cursor.on = false;
+        return;
+      }
+      // invert the projection back onto the water plane
+      const z = (CAM_Y * FOCAL * S) / (sy - hy);
+      if (z > Z_FAR) {
+        cursor.on = false;
+        return;
+      }
+      cursor.on = true;
+      cursor.z = z;
+      cursor.x = ((sx - cx) * z) / (FOCAL * S);
+      if (reduced) frame();
+    });
+    canvas.addEventListener('pointerleave', () => {
+      cursor.on = false;
+    });
+
+    new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()), {
+      threshold: 0,
+    }).observe(canvas);
+
+    document.addEventListener('visibilitychange', () =>
+      document.hidden ? stop() : start()
+    );
+  }
+</script>

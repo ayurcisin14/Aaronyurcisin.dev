@@ -1,11 +1,215 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import RibbonField from '../components/RibbonField.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const profile = {
+  name: "Aaron Yurcisin",
+  tagline: "Senior Data Analyst / Analytics engineer. Pipelines, models, and the experiments that check them.",
+  links: [
+    { label: "GitHub", href: "https://github.com/ayurcisin14" },
+    { label: "LinkedIn", href: "https://linkedin.com/in/aaron-yurcisin" },
+    { label: "Email", href: "mailto:aaron.yurcisin@outlook.com" },
+  ],
+};
+
+const entries = [
+  {
+    kind: "project",
+    title: "Bayesian wOBA",
+    summary:
+      "Hierarchical model for batter performance that shrinks small-sample noise toward position priors. Full derivation and writeup.",
+    date: "2026",
+    href: "https://github.com/ayurcisin14",
+  },
+     {
+    kind: "patent",
+    title: "System for Activating a Conditional Focus Model Through Internal and External Observations",
+    summary: "Created a system that monitors various external factors when driving, and will limit infotainment features to a varying degree.",
+    date: "2025",
+    href: "#",
+  },
+
+  {
+    kind: "patent",
+    title: "Method and Algorithim for Managing Limited Charging Resources",
+    summary: "Developed a way to triage charging resources for Electric Vehicles when in high demand settings.",
+    date: "2024",
+    href: "#",
+  },
+  /*
+  {
+    kind: "writing",
+    title: "Coming Soon!",
+    summary:
+      "Something you figured out the hard way and would have wanted to read six months earlier.",
+    date: "2025",
+    href: "#",
+  },
+  {
+    kind: "project",
+    title: "Third project",
+    summary: "What it does, and what was actually difficult about building it.",
+    date: "2024",
+    href: "#",
+  },
+  */
+];
 ---
 
-<Layout>
-	<Welcome />
+<Layout title={`${profile.name} — Analytics Engineer`}>
+  <RibbonField name={profile.name} tagline={profile.tagline} />
+
+  <main class="wrap">
+    <section class="block">
+      <h2>Work</h2>
+      <p class="lede">Projects, patents, and writing. Some finished, more in progress.</p>
+
+      <ul class="grid">
+        {entries.map((e) => (
+          <li class={`tile kind-${e.kind}`}>
+            <span class="kind">{e.kind}</span>
+            <h3><a href={e.href}>{e.title}</a></h3>
+            <p>{e.summary}</p>
+            <span class="date">{e.date}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <footer class="foot">
+      <p>{profile.name}</p>
+      <ul>
+        {profile.links.map((l) => (
+          <li><a href={l.href}>{l.label}</a></li>
+        ))}
+      </ul>
+    </footer>
+  </main>
 </Layout>
+
+<style>
+  .wrap {
+    max-width: 74rem;
+    margin: 0 auto;
+    padding: 0 clamp(1rem, 5vw, 4.5rem);
+  }
+
+  .block {
+    padding: clamp(3.5rem, 9vh, 6rem) 0 0;
+  }
+
+  .block h2 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .lede {
+    margin: 0.5rem 0 2.75rem;
+    color: var(--muted);
+    max-width: 44ch;
+  }
+
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 1.6rem 1.7rem 1.4rem;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+
+  .tile:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+
+  .kind {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.85rem;
+  }
+
+  .kind-project .kind { color: var(--teal); }
+  .kind-patent  .kind { color: var(--vermilion); }
+  .kind-writing .kind { color: var(--olive); }
+
+  .tile h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0 0 0.55rem;
+  }
+
+  .tile h3 a {
+    text-decoration: none;
+  }
+
+  .tile h3 a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .tile p {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .date {
+    margin-top: auto;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .foot {
+    margin-top: clamp(4rem, 10vh, 7rem);
+    padding: 1.75rem 0 3rem;
+    border-top: 1.5px solid var(--rule);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--muted);
+  }
+
+  .foot p {
+    margin: 0;
+  }
+
+  .foot ul {
+    list-style: none;
+    display: flex;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .foot a {
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration-color: var(--rule);
+    text-underline-offset: 0.25em;
+  }
+
+  .foot a:hover {
+    text-decoration-color: var(--vermilion);
+  }
+</style>

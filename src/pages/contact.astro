@@ -1,0 +1,147 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
+
+const channels = [
+  {
+    icon: "lucide:mail",
+    label: "Email",
+    handle: "aaron.yurcisin@outlook.com",
+    href: "mailto:aaron.yurcisin@outlook.com",
+    note: "The best way to reach me.",
+    tone: "vermilion",
+  },
+  {
+    icon: "simple-icons:linkedin",
+    label: "LinkedIn",
+    handle: "aaron-yurcisin",
+    href: "https://linkedin.com/in/aaron-yurcisin",
+    note: "Work history and the occasional post.",
+    tone: "navy",
+  },
+  {
+    icon: "simple-icons:github",
+    label: "GitHub",
+    handle: "ayurcisin14",
+    href: "https://github.com/ayurcisin14",
+    note: "Project code and writeups.",
+    tone: "teal",
+  },
+  {
+    icon: "simple-icons:huggingface",
+    label: "Hugging Face",
+    handle: "AmbitiousTurtle",
+    href: "https://huggingface.co/AmbitiousTurtle",
+    note: "Models and datasets I'm experimenting with.",
+    tone: "orange",
+  },
+];
+---
+
+<Layout title="Contact — Aaron Yurcisin">
+  <main class="wrap">
+    <h1>Contact</h1>
+    <p class="lede">
+      Email is the surest route. Everything else below works too.
+    </p>
+
+    <ul class="grid">
+      {channels.map((c) => (
+        <li class={`tile tone-${c.tone}`}>
+          <span class="icon"><Icon name={c.icon} /></span>
+          <h2><a href={c.href}>{c.label}</a></h2>
+          <p class="handle">{c.handle}</p>
+          <p class="note">{c.note}</p>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Layout>
+
+<style>
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 2rem clamp(1rem, 5vw, 4.5rem) 6rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .lede {
+    margin: 0.5rem 0 3rem;
+    color: var(--muted);
+    max-width: 42ch;
+  }
+
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+
+  .tile {
+    position: relative;
+    padding: 1.6rem 1.7rem 1.5rem;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+
+  .tile:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+
+  .icon {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .icon :global(svg) {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .tone-navy      .icon { color: var(--navy); }
+  .tone-teal      .icon { color: var(--teal); }
+  .tone-orange    .icon { color: var(--orange); }
+  .tone-vermilion .icon { color: var(--vermilion); }
+
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.15rem;
+  }
+
+  h2 a {
+    text-decoration: none;
+  }
+
+  h2 a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .handle {
+    margin: 0 0 0.7rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    word-break: break-word;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+</style>

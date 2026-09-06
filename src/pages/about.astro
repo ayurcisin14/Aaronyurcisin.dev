@@ -1,0 +1,265 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
+
+const intro = [
+  "Currently building the data systems behind sales decisions at General Motors. Pipelines, semantic layers, recommendation models, and the controlled experiments that tell us whether any of it moved the number. When I'm not working on my Master's, or volunteering, you can find me outside with my dog or building something.",
+  "Before my career, I studied economics at UF, where I was the VP of our research society, and Director of investments. Prior, I worked for a landscape construction company, and freelanced as both an umpire and a tutor.",
+];
+
+const education = [
+  {
+    tone: "navy",
+    school: "Georgia Institute of Technology",
+    period: "Expected 2026",
+    degree: "M.S. Computational Data Analytics",
+    detail:
+      "Coursework across statistical modeling, machine learning, and large-scale computing.",
+  },
+  {
+    tone: "teal",
+    school: "University of Florida",
+    period: "Graduated - Cum Laude",
+    degree: "B.A. Economics",
+    detail: "Econometrics and quantitative methods.",
+  },
+];
+
+const experience = [
+  {
+    tone: "vermilion",
+    org: "General Motors",
+    period: "2022 - Present",
+    role: "Senior Data Analyst",
+    bullets: [
+      "Own end-to-end Databricks pipelines supporting a 2,000+ advisor sales organization.",
+      "Build ML recommendation and forecasting models; also have an LLM coaching agent now in production use.",
+      "Named inventor on four IP awards, including two issued U.S. patents.",
+    ],
+  },
+  {
+    tone: "orange",
+    org: "Benefit Golf Tournament",
+    period: "2021 - Present",
+    role: "Technical & Operations Lead",
+    bullets: [
+      "Own the full technical and financial stack: infrastructure, ecommerce, registration, payments, and reconciliation.",
+      "Remediated the site to WCAG standards and instrumented automated accessibility scanning.",
+    ],
+  },
+  {
+    tone: "olive",
+    org: "Poole & Fuller",
+    period: "2018 - 2020",
+    role: "Associate Account Manager",
+    bullets: [
+      "Managed 95+ properties; portfolio valued at ~$2.4M revenue annually",
+      
+    ],
+  },
+];
+---
+
+<Layout title="About — Aaron Yurcisin">
+  <main class="wrap">
+    <section class="intro">
+      <img
+        class="portrait"
+        src="/headshot.jpg"
+        alt="Portrait of Aaron Yurcisin"
+        width="320"
+        height="400"
+      />
+      <div class="bio">
+        <h1>About</h1>
+        {intro.map((p) => <p>{p}</p>)}
+        
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Education</h2>
+      <ul class="rows">
+        {education.map((e) => (
+          <li class={`row tone-${e.tone}`}>
+            <div class="meta">
+              <p class="org">{e.school}</p>
+              <p class="period">{e.period}</p>
+            </div>
+            <div class="body">
+              <h3>{e.degree}</h3>
+              <p>{e.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="block">
+      <h2>Experience</h2>
+      <ul class="rows">
+        {experience.map((e) => (
+          <li class={`row tone-${e.tone}`}>
+            <div class="meta">
+              <p class="org">{e.org}</p>
+              <p class="period">{e.period}</p>
+            </div>
+            <div class="body">
+              <h3>{e.role}</h3>
+              <ul class="bullets">
+                {e.bullets.map((b) => <li>{b}</li>)}
+              </ul>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 2rem clamp(1rem, 5vw, 4.5rem) 6rem;
+  }
+
+  /* --- intro ----------------------------------------------------------- */
+  .intro {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (min-width: 780px) {
+    .intro {
+      grid-template-columns: 16rem minmax(0, 1fr);
+      gap: 3.5rem;
+    }
+  }
+
+  .portrait {
+    width: 100%;
+    max-width: 16rem;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 4px solid var(--ink);
+  }
+
+  .bio h1 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+  }
+
+  .bio p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+
+  .resume {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    padding: 0.7rem 1.3rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--surface);
+    border: 2.5px solid var(--ink);
+    border-radius: 8px;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .resume:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .resume :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  /* --- rows ------------------------------------------------------------ */
+  .block {
+    margin-top: clamp(3.5rem, 9vh, 5.5rem);
+  }
+
+  .block h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 1.5rem;
+  }
+
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .row {
+    display: grid;
+    gap: 0.75rem 2rem;
+    padding: 1.5rem 1.7rem;
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    border-left-width: 6px;
+    border-radius: 10px;
+  }
+
+  @media (min-width: 700px) {
+    .row {
+      grid-template-columns: 14rem minmax(0, 1fr);
+    }
+  }
+
+  .tone-navy      { border-left-color: var(--navy); }
+  .tone-teal      { border-left-color: var(--teal); }
+  .tone-olive     { border-left-color: var(--olive); }
+  .tone-orange    { border-left-color: var(--orange); }
+  .tone-vermilion { border-left-color: var(--vermilion); }
+
+  .org {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .period {
+    margin: 0.1rem 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .body > p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .bullets {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+  }
+
+  .bullets li {
+    margin-bottom: 0.35rem;
+  }
+
+  .bullets li::marker {
+    color: var(--orange);
+  }
+</style>
