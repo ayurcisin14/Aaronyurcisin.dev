@@ -38,7 +38,7 @@ const entries = [
     kind: "project",
     title: "Global COVID-19 Impact: A Cross Sectional Study",
     summary:
-      'Peformed an Analysis and Modeling on various impacts from the COVID-19 pandemic. Personal focus was on sustainability modeling global CO2 emissions and a "Green Rebound" Score via a Kaya Identity.',
+      'Performed an Analysis and Modeling on various impacts from the COVID-19 pandemic. Personal focus was on sustainability modeling global CO2 emissions and a "Green Rebound" Score via a Kaya Identity.',
     date: "November 2025",
     href: "https://github.com/ayurcisin14/Private-Projects",
   },
@@ -70,16 +70,16 @@ const entries = [
   },
 {
     kind: "patent-work",
-    title: "Method for Automatically Establishing V2V Communication During Over Pull Over Events",
+    title: "Invention Disclosure: Method for Automatically Establishing V2V Communication During Pull Over Events",
     summary:
-      "Invention Disclosure: Devised a method for V2V communication",
+      "Devised a method for V2V communication",
     date: "June 2024",
     href: "#",
   },
 
    {
     kind: "patent-work",
-    title: "Defensive Publication: Method and Algorithim for Managing Limited Charging Resources",
+    title: "Defensive Publication: Method and Algorithm for Managing Limited Charging Resources",
     summary: "Developed a way to triage charging resources for Electric Vehicles when in high demand settings.",
     date: "November 2023",
     href: "#",
@@ -103,6 +103,13 @@ const entries = [
   },
   */
 ];
+
+
+const KIND_LABEL = {
+  project: "Project",
+  "patent-work": "Patent & IP",
+  writing: "Writing",
+};
 ---
 
 <Layout title={`${profile.name} — Analytics Engineer`}>
@@ -113,15 +120,20 @@ const entries = [
       <h2>Work</h2>
       <p class="lede">Projects, patents, and writing. Some finished, more in progress.</p>
 
-      <ul class="grid">
-        {entries.map((e) => (
-          <li class={`tile kind-${e.kind}`}>
-            <span class="kind">{e.kind}</span>
-            <h3><a href={e.href}>{e.title}</a></h3>
-            <p>{e.summary}</p>
-            <span class="date">{e.date}</span>
-          </li>
-        ))}
+            <ul class="grid">
+        {entries.map((e) => {
+          const linked = e.href && e.href !== "#";
+          return (
+            <li class={`tile kind-${e.kind}${linked ? " is-linked" : ""}`}>
+              <span class="kind">{KIND_LABEL[e.kind] ?? e.kind}</span>
+              {linked
+                ? <h3><a href={e.href}>{e.title}</a></h3>
+                : <h3>{e.title}</h3>}
+              <p>{e.summary}</p>
+              <span class="date">{e.date}</span>
+            </li>
+          );
+        })}
       </ul>
     </section>
 
