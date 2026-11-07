@@ -1,0 +1,20 @@
+# Security headers for every static page and asset. Cloudflare reads this file
+# at deploy time; `astro dev` ignores it, so test with `astro preview`.
+#
+# Content-Security-Policy starts from "nothing allowed" and opens only what the
+# site uses:
+#   script-src  'unsafe-inline' is required: Astro inlines the ribbon script and
+#               Cloudflare injects its own inline script on each request.
+#               static.cloudflareinsights.com is Cloudflare Web Analytics, added
+#               at the edge, so it never appears in this repo's HTML.
+#   style-src   Astro inlines page CSS; Google Fonts serves the font stylesheet.
+#   font-src    Google Fonts serves the font files themselves.
+#   img-src     Local images, plus data: URIs.
+#   connect-src Cloudflare's scripts report back to same-origin /cdn-cgi paths.
+# If you add an embed, analytics or a new CDN, add its host here or it will be
+# blocked. Check the browser console for "Content Security Policy" errors.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
