@@ -182,7 +182,8 @@ const { name, tagline } = Astro.props;
       const x0 = -40;
       const x1 = w + 40;
       const dx = (x1 - x0) / STEPS;
-      const span = w + 2 * LIGHT_W;
+      // never zero: lightX below divides by this, and a canvas can load 0px wide
+      const span = Math.max(1, w + 2 * LIGHT_W);
       const half = (BANDS.length - 1) / 2;
 
       // precompute the centreline once; every band is a copy of it
